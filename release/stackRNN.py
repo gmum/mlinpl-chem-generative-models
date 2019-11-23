@@ -70,7 +70,7 @@ class StackAugmentedRNN(nn.Module):
 
         """
         super(StackAugmentedRNN, self).__init__()
-        
+
         if layer_type not in ['GRU', 'LSTM']:
             raise InvalidArgumentError('Layer type must be GRU or LSTM')
         self.layer_type = layer_type
@@ -96,7 +96,7 @@ class StackAugmentedRNN(nn.Module):
             self.use_cuda = torch.cuda.is_available()
 
         self.n_layers = n_layers
-        
+
         if self.has_stack:
             self.stack_controls_layer = nn.Linear(in_features=self.hidden_size *
                                                               self.num_dir,
@@ -117,10 +117,10 @@ class StackAugmentedRNN(nn.Module):
             self.decoder = nn.Linear(hidden_size * self.num_dir, output_size)
         elif self.layer_type == 'GRU':
             self.rnn = nn.GRU(rnn_input_size, hidden_size, n_layers,
-                             bidirectional=self.is_bidirectional)
+                              bidirectional=self.is_bidirectional)
             self.decoder = nn.Linear(hidden_size * self.num_dir, output_size)
         self.log_softmax = torch.nn.LogSoftmax(dim=1)
-        
+
         if self.use_cuda:
             self = self.cuda()
         self.criterion = nn.CrossEntropyLoss()
@@ -128,7 +128,7 @@ class StackAugmentedRNN(nn.Module):
         self.optimizer_instance = optimizer_instance
         self.optimizer = self.optimizer_instance(self.parameters(), lr=lr,
                                                  weight_decay=0.00001)
-  
+
     def load_model(self, path):
         """
         Loads pretrained parameters from the checkpoint into the model.
@@ -342,7 +342,7 @@ class StackAugmentedRNN(nn.Module):
         self.optimizer.step()
 
         return loss.item() / len(inp)
-    
+
     def evaluate(self, data, prime_str='<', end_token='>', predict_len=100):
         """
         Generates new string from the model distribution.
@@ -383,7 +383,7 @@ class StackAugmentedRNN(nn.Module):
         new_sample = prime_str
 
         # Use priming string to "build up" hidden state
-        for p in range(len(prime_str)-1):
+        for p in range(len(prime_str) - 1):
             _, hidden, stack = self.forward(prime_input[p], hidden, stack)
         inp = prime_input[-1]
 
@@ -455,10 +455,18 @@ class StackAugmentedRNN(nn.Module):
                 print('[%s (%d %d%%) %.4f]' % (time_since(start), epoch,
                                                epoch / n_iterations * 100, loss)
                       )
-                print(self.evaluate(data=data, prime_str = '<',
+                print(self.evaluate(data=data, prime_str='<',
                                     predict_len=100), '\n')
 
             if epoch % plot_every == 0:
                 all_losses.append(loss_avg / plot_every)
                 loss_avg = 0
         return all_losses
+
+
+class TemplateRNN(StackAugmentedRNN):
+    def forward(self, inp, hidden, stack):
+        pass
+
+    def stack_augmentation(self, input_val, prev_stack, controls):
+        pass

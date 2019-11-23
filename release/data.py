@@ -96,7 +96,7 @@ class GeneratorData(object):
             tensor[c] = self.all_characters.index(string[c])
         if self.use_cuda:
             # return torch.tensor(tensor).cuda()
-            return tensor.clone().detach().requires_grad_(True)
+            return tensor.clone().detach().cuda()
         else:
             # return torch.tensor(tensor)
             return tensor.clone().detach()
